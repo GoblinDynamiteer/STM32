@@ -38,7 +38,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_rcc.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
@@ -46,6 +46,7 @@
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+bool switch_led;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -54,6 +55,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -89,19 +91,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
-
+  switch_led = false;
+  HAL_TIM_Base_Start_IT(&htim3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-	  HAL_Delay(500);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-	  HAL_Delay(500);
+	  if(switch_led)
+	  {
+		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+		  switch_led = false;
+	  }
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -157,7 +162,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim->Instance == TIM3)
+	{
+		switch_led = true;
+	}
+}
 /* USER CODE END 4 */
 
 /**
