@@ -6,9 +6,7 @@
 #define LED_PIN_GREEN PA2
 #define LED_PIN_BLUE PA3
 
-int pwm;
-bool rise;
-
+/* Blink Red LED */
 static void vLEDRedBlink(void *pvParameters)
 {
     while(1)
@@ -20,10 +18,14 @@ static void vLEDRedBlink(void *pvParameters)
     }
 }
 
+/* Fade blue LED */
 static void vLEDBlueFade(void *pvParameters)
 {
     while(1)
     {
+        static int pwm = 100;
+        static bool rise = true;
+
         pwm = rise ? (pwm + 1) : (pwm - 1);
 
         analogWrite(LED_PIN_BLUE, pwm);
@@ -33,48 +35,44 @@ static void vLEDBlueFade(void *pvParameters)
             rise = !rise;
         }
 
-        vTaskDelay(15);
+        vTaskDelay(5);
     }
 }
 
+/* Blink Green LED */
 static void vLEDGreenBlink(void *pvParameters)
 {
     while(1)
     {
-        vTaskDelay(100);
+        vTaskDelay(200);
         digitalWrite(LED_PIN_GREEN, HIGH);
-        vTaskDelay(100);
+        vTaskDelay(200);
         digitalWrite(LED_PIN_GREEN, LOW);
     }
 }
 
 void setup()
 {
-    // initialize the digital pin as an output:
     pinMode(LED_PIN_RED, OUTPUT);
     pinMode(LED_PIN_BLUE, OUTPUT);
     pinMode(LED_PIN_GREEN, OUTPUT);
 
-    pwm = 100;
-    rise = true;
-
     xTaskCreate(vLEDRedBlink,
-                "Task1",
+                "REDBLINK",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 tskIDLE_PRIORITY + 2,
                 NULL);
-    //vTaskStartScheduler();
 
     xTaskCreate(vLEDGreenBlink,
-                "Task2",
+                "GREENBLINK",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
     xTaskCreate(vLEDBlueFade,
-                "Task3",
+                "BLUEFADE",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 tskIDLE_PRIORITY + 2,
@@ -85,5 +83,5 @@ void setup()
 
 void loop()
 {
-    // Insert background code here
+
 }
