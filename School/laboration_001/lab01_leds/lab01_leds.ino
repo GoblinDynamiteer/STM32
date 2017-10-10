@@ -37,6 +37,10 @@ storleken på stackstorleken.
 
 Återställ configMINIMAL_STACK_SIZE i koden!
 
+7. Undersökning - olika prioritet:
+Ändra prioriteten på en task, behåll den andra.
+Notera vad som händer!
+
 */
 
 #include <MapleFreeRTOS821.h>
@@ -76,16 +80,16 @@ void setup()
 
     xTaskCreate(vLEDBlink,
                 "REDBINK",
-                (UBaseType_t)(85 - STACK_DECREASE),
+                configMINIMAL_STACK_SIZE,
                 (void*)settings_red,
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
     xTaskCreate(vLEDBlink,
                 "GREENBLINK",
-                (UBaseType_t)(85 - STACK_DECREASE),
+                configMINIMAL_STACK_SIZE,
                 (void*)settings_green,
-                tskIDLE_PRIORITY + 2,
+                tskIDLE_PRIORITY + 200,
                 NULL);
 
     vTaskStartScheduler();
