@@ -47,26 +47,29 @@ Notera vad som händer!
 
 #define LED_PIN_RED PA1
 #define LED_PIN_GREEN PA2
-#define LED_PIN_BLUE PA3
-#define LED_ON_BOARD PC13
 
-#define DIM_DELAY_RED 20
-#define DIM_DELAY_GREEN 13 // 20 * 1.64
+#define DIM_DELAY_RED 500
+#define DIM_DELAY_GREEN 1000
 
-#define STACK_DECREASE 58 // 59 (85-59 = 26) did not work!
-
-static int settings_red = LED_PIN_RED;
-static int settings_green = LED_PIN_GREEN;
+struct _settings{
+    int pin;
+    int delay;
+}settings[] =
+{
+    { LED_PIN_RED, DIM_DELAY_RED },
+    { LED_PIN_GREEN, DIM_DELAY_GREEN }
+};
 
 /* Blink LED */
-static void vLEDBlink(void *pvParameters)
+static void vLEDBlink(void (*pvParameters))
 {
     while(1)
     {
-        vTaskDelay(1000);
-        digitalWrite((int)pvParameters, HIGH);
+        _settings * s = (_settings *)pvParameters;
+        vTaskDelay(s->delay);
+        digitalWrite(s->pin, HIGH);
         vTaskDelay(50);
-        digitalWrite((int)pvParameters, LOW);
+        digitalWrite(s->pin, LOW);
     }
 }
 
@@ -75,21 +78,18 @@ void setup()
     pinMode(LED_PIN_RED, OUTPUT);
     pinMode(LED_PIN_GREEN, OUTPUT);
 
-    /* From FreeRTOSConfig.h */
-    //  #define configMINIMAL_STACK_SIZE            ( ( UBaseType_t ) 85 )
-
     xTaskCreate(vLEDBlink,
                 "REDBINK",
                 configMINIMAL_STACK_SIZE,
-                (void*)settings_red,
+                (void*)&settings[0],
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
     xTaskCreate(vLEDBlink,
                 "GREENBLINK",
                 configMINIMAL_STACK_SIZE,
-                (void*)settings_green,
-                tskIDLE_PRIORITY + 200,
+                (void*)&settings[1],
+                tskIDLE_PRIORITY + 2,
                 NULL);
 
     vTaskStartScheduler();
