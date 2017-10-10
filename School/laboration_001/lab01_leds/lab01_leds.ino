@@ -25,45 +25,18 @@ första LED:en. Använd valfri kodmetod.
 #define DIM_DELAY_RED 20
 #define DIM_DELAY_GREEN 13 // 20 * 1.64
 
-/* Fade red LED */
-static void vLEDDimRed(void *pvParameters)
+static int settings_red = LED_PIN_RED;
+static int settings_green = LED_PIN_GREEN;
+
+/* Blink LED */
+static void vLEDBlink(void *pvParameters)
 {
     while(1)
     {
-        static int pwm = 100;
-        static bool rise = true;
-
-        pwm = rise ? (pwm + 1) : (pwm - 1);
-
-        analogWrite(LED_PIN_RED, pwm);
-
-        if(pwm < 5 || pwm > 150)
-        {
-            rise = !rise;
-        }
-
-        vTaskDelay(DIM_DELAY_RED);
-    }
-}
-
-/* Fade red LED */
-static void vLEDDimGreen(void *pvParameters)
-{
-    while(1)
-    {
-        static int pwm = 100;
-        static bool rise = true;
-
-        pwm = rise ? (pwm + 1) : (pwm - 1);
-
-        analogWrite(LED_PIN_GREEN, pwm);
-
-        if(pwm < 5 || pwm > 150)
-        {
-            rise = !rise;
-        }
-
-        vTaskDelay(DIM_DELAY_GREEN);
+        vTaskDelay(1000);
+        digitalWrite((int)pvParameters, HIGH);
+        vTaskDelay(50);
+        digitalWrite((int)pvParameters, LOW);
     }
 }
 
@@ -72,17 +45,17 @@ void setup()
     pinMode(LED_PIN_RED, OUTPUT);
     pinMode(LED_PIN_GREEN, OUTPUT);
 
-    xTaskCreate(vLEDDimRed,
-                "REDFADE",
+    xTaskCreate(vLEDBlink,
+                "REDBINK",
                 configMINIMAL_STACK_SIZE,
-                NULL,
+                (void*)settings_red,
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
-    xTaskCreate(vLEDDimGreen,
-                "GREENFADE",
+    xTaskCreate(vLEDBlink,
+                "GREENBLINK",
                 configMINIMAL_STACK_SIZE,
-                NULL,
+                (void*)settings_green,
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
