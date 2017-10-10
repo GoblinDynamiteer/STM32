@@ -4,6 +4,9 @@
 Ändra värdena i vTaskDelay så att LED:en blinkar en
 gång i sekunden.
 
+3. Extern LED, dim:
+Sladda upp en extern LED i stället och få denna att
+dimma upp och ner långsamt.
 
 */
 
@@ -14,22 +17,32 @@ gång i sekunden.
 #define LED_PIN_BLUE PA3
 #define LED_ON_BOARD PC13
 
-/* Blink Red LED once per seconds */
-static void vLEDBlink(void *pvParameters)
+/* Fade red LED */
+static void vLEDDim(void *pvParameters)
 {
     while(1)
     {
-        vTaskDelay(1000);
-        digitalWrite(LED_ON_BOARD, HIGH);
-        vTaskDelay(50);
-        digitalWrite(LED_ON_BOARD, LOW);
+        static int pwm = 100;
+        static bool rise = true;
+
+        pwm = rise ? (pwm + 1) : (pwm - 1);
+
+        analogWrite(LED_PIN_RED, pwm);
+
+        if(pwm < 5 || pwm > 150)
+        {
+            rise = !rise;
+        }
+
+        vTaskDelay(5);
     }
 }
+
 void setup()
 {
-    pinMode(LED_ON_BOARD, OUTPUT);
+    pinMode(LED_PIN_RED, OUTPUT);
 
-    xTaskCreate(vLEDBlink,
+    xTaskCreate(vLEDDim,
                 "REDBLINK",
                 configMINIMAL_STACK_SIZE,
                 NULL,
