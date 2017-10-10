@@ -22,6 +22,21 @@ använd parametern pvParameters! Undersök hur
 pvParameters kan användas genom att slå upp
 xTaskCreate på www.freertos.org!)
 
+6. Undersökning - stackstorlek:
+
+Ta reda på hur stor configMINIMAL_STACK_SIZE är, det
+skall finnas i källkoden till biblioteket
+MapleFreeRTOS900 på din dator. I stället för att
+använda configMINIMAL_STACK_SIZE när du skapar
+ett task, testa med ett mindre värde och ladda upp.
+Minska mer och mer tills sketchen inte fungerar längre.
+
+Ett allmänråd när det gäller configMINIMAL_STACK_SIZE
+är att om en sketch slutar fungera, så försök öka
+storleken på stackstorleken.
+
+Återställ configMINIMAL_STACK_SIZE i koden!
+
 */
 
 #include <MapleFreeRTOS821.h>
@@ -33,6 +48,8 @@ xTaskCreate på www.freertos.org!)
 
 #define DIM_DELAY_RED 20
 #define DIM_DELAY_GREEN 13 // 20 * 1.64
+
+#define STACK_DECREASE 58 // 59 (85-59 = 26) did not work!
 
 static int settings_red = LED_PIN_RED;
 static int settings_green = LED_PIN_GREEN;
@@ -54,16 +71,19 @@ void setup()
     pinMode(LED_PIN_RED, OUTPUT);
     pinMode(LED_PIN_GREEN, OUTPUT);
 
+    /* From FreeRTOSConfig.h */
+    //  #define configMINIMAL_STACK_SIZE            ( ( UBaseType_t ) 85 )
+
     xTaskCreate(vLEDBlink,
                 "REDBINK",
-                configMINIMAL_STACK_SIZE,
+                (UBaseType_t)(85 - STACK_DECREASE),
                 (void*)settings_red,
                 tskIDLE_PRIORITY + 2,
                 NULL);
 
     xTaskCreate(vLEDBlink,
                 "GREENBLINK",
-                configMINIMAL_STACK_SIZE,
+                (UBaseType_t)(85 - STACK_DECREASE),
                 (void*)settings_green,
                 tskIDLE_PRIORITY + 2,
                 NULL);
