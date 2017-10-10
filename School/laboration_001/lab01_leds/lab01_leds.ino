@@ -13,6 +13,15 @@ Lägg till en ytterligare extern LED och koda så att
 denna externa LED dimmar 1,36 gånger snabbare än den
 första LED:en. Använd valfri kodmetod.
 
+5. Kodrationalisering:
+
+Omforma nu koden så att du bara har en funktion för
+att blinka bägge LED:ar, men startar två tasks med
+denna enda funktion, en task för vardera LED. (Hint:
+använd parametern pvParameters! Undersök hur
+pvParameters kan användas genom att slå upp
+xTaskCreate på www.freertos.org!)
+
 */
 
 #include <MapleFreeRTOS821.h>
