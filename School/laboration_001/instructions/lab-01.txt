@@ -1,0 +1,60 @@
+Laborationsserie 1 — Realtidssystem 16
+--------------------------------------
+
+Använd standardexemplet File > Examples > FreeRTOS900 > 
+rtos_blink som grund att stå på vid start av uppgift 1.
+Sätt BluePill för bekvämlighets skull på en breadboard.
+Ändamålet med laborationen är att testa gränserna för hur
+man kan parallellprogrammera med hjälp av tasks i FreeRTOS.
+
+1. Få sketchen att kompilera:
+
+    BOARD_LED_PIN är inte definierad, ta reda på vad 
+	PIN:en för Bluepillens onboard-PIN heter! Om du inte 
+	har kvar länken till Bluepillens specifikation, ta 
+	fram länken på kursen Realtidssystem IS16 i Moodle!
+
+2. Få koden att blinka 1 gång i sekunden:
+
+    Ändra värdena i vTaskDelay så att LED:en blinkar en
+	gång i sekunden.
+
+3. Extern LED, dim:
+
+    Sladda upp en extern LED i stället och få denna att
+	dimma upp och ner långsamt.
+
+4. 2 externa LED:s dimmar i otakt: 
+
+    Lägg till en ytterligare extern LED och koda så att
+	denna externa LED dimmar 1,36 gånger snabbare än den
+	första LED:en. Använd valfri kodmetod.
+
+5. Kodrationalisering:
+
+    Omforma nu koden så att du bara har en funktion för
+	att blinka bägge LED:ar, men startar två tasks med
+	denna enda funktion, en task för vardera LED. (Hint:
+	använd parametern pvParameters! Undersök hur
+	pvParameters kan användas genom att slå upp
+	xTaskCreate på www.freertos.org!)
+
+6. Undersökning - stackstorlek:
+
+    Ta reda på hur stor configMINIMAL_STACK_SIZE är, det 
+	skall finnas i källkoden till biblioteket 
+	MapleFreeRTOS900 på din dator. I stället för att
+	använda configMINIMAL_STACK_SIZE när du skapar 
+	ett task, testa med ett mindre värde och ladda upp.
+	Minska mer och mer tills sketchen inte fungerar längre.
+
+    Ett allmänråd när det gäller configMINIMAL_STACK_SIZE
+	är att om en sketch slutar fungera, så försök öka
+	storleken på stackstorleken.
+    
+    Återställ configMINIMAL_STACK_SIZE i koden!
+
+7. Undersökning - olika prioritet:
+
+    Ändra prioriteten på en task, behåll den andra.
+	Notera vad som händer!
