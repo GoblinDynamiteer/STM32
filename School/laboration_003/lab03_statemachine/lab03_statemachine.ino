@@ -98,5 +98,5 @@ void loop()
 {
     dim_led(RED);
     dim_led(BLUE);
-    delay(20);
+    delay(5);
 }
