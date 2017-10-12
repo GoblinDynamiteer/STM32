@@ -67,7 +67,23 @@ void button_isr(void)
         button_pressed = YES;
         led.run = !led.run;
     }
+}
 
+/* Timer3 controls LED */
+void dim_led(void)
+{
+    if(led.run)
+    {
+        set_pwm(led.direction);
+        analogWrite(led.pin, led.pwm);
+
+        /* Swap fade direction if max/min pwm reached */
+        if( (led.pwm == PWM_MAX && led.direction == UP) ||
+            (led.pwm == PWM_MIN && led.direction == DOWN))
+            {
+                led.direction = !led.direction;
+            }
+    }
 }
 
 void setup()
@@ -78,6 +94,12 @@ void setup()
     pinMode(INT_PIN, INPUT_PULLUP);
     attachInterrupt(INT_PIN, button_isr, FALLING);
 
+    /* Timer 3, channel 1 == pin 12 */
+    Timer3.setChannel1Mode(TIMER_OUTPUTCOMPARE);
+    Timer3.setPeriod(5000);
+    Timer3.setCompare1(1);
+    Timer3.attachCompare1Interrupt(dim_led);
+
     button_timer = millis();
     button_pressed = NO;
 }
@@ -85,27 +107,9 @@ void setup()
 /* Dim LED up/down with main loop instead of FreeRTOS */
 void loop()
 {
-    while(1)
+    if(button_pressed && millis() - button_timer > BUTTON_DELAY)
     {
-        if(led.run)
-        {
-            set_pwm(led.direction);
-            analogWrite(led.pin, led.pwm);
-
-            /* Swap fade direction if max/min pwm reached */
-            if( (led.pwm == PWM_MAX && led.direction == UP) ||
-                (led.pwm == PWM_MIN && led.direction == DOWN))
-                {
-                    led.direction = !led.direction;
-                }
-        }
-
-        if(button_pressed && millis() - button_timer > BUTTON_DELAY)
-        {
-            button_pressed = NO;
-            button_timer = millis();
-        }
-
-        delay(led.delay);
+        button_pressed = NO;
+        button_timer = millis();
     }
 }
