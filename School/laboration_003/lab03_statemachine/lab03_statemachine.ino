@@ -11,67 +11,63 @@
 enum{UP, DOWN, TOP, BOTTOM};
 enum{RED, BLUE};
 
-int state_led1, state_led2;
-int pwm_led1, pwm_led2;
-int ticker1, ticker2;
+int state[2];
+int pwm[2];
+int ticker[2];
+int pin[2];
 
-void change_pwm(int * pwm, bool direction)
+void change_pwm(int led, bool direction)
 {
     if(direction == UP)
     {
-        (*pwm)++;
-        *pwm = *pwm > 255 ? 255 : *pwm;
+        pwm[led]++;
+        pwm[led] = pwm[led] > 255 ? 255 : pwm[led];
     }
 
     if(direction == DOWN)
     {
-        (*pwm)--;
-        *pwm = *pwm < 0 ? 0 : *pwm;
+        pwm[led]--;
+        pwm[led] = pwm[led] < 0 ? 0 : pwm[led];
     }
 }
 
 void dim_led(int led)
 {
-    int * state = led == RED ? &state_led1 : &state_led2;
-    int * pwm = led == RED ? &pwm_led1 : &pwm_led2;
-    int * ticker = led == RED ? &ticker1 : &ticker2;
-    int pin = led == RED ? LED_PIN_RED : LED_PIN_BLUE;
-
-    switch(*state)
+    switch(state[led])
     {
         case UP:
-            change_pwm(pwm, UP);
-            analogWrite(pin, *pwm);
-            if(*ticker == TICKER_MAX)
+            change_pwm(led, UP);
+            analogWrite(pin[led], pwm[led]);
+            if(ticker[led] == TICKER_MAX)
             {
-                *ticker = 0;
-                *state = TOP;
+                ticker[led] = 0;
+                state[led] = TOP;
             }
             break;
 
         case TOP:
-            if(*ticker == TICKER_MAX)
+            if(ticker[led] == TICKER_MAX)
             {
-                *ticker = 0;
-                *state = DOWN;
+                ticker[led] = 0;
+                state[led] = DOWN;
             }
             break;
 
         case DOWN:
-            change_pwm(pwm, DOWN);
-            analogWrite(pin, *pwm);
-            if(*ticker == TICKER_MAX)
+            change_pwm(led, DOWN);
+            analogWrite(pin[led], pwm[led]);
+            if(ticker[led] == TICKER_MAX)
             {
-                *ticker = 0;
-                *state = BOTTOM;
+                ticker[led] = 0;
+                state[led] = BOTTOM;
             }
             break;
 
         case BOTTOM:
-            if(*ticker == TICKER_MAX)
+            if(ticker[led] == TICKER_MAX)
             {
-                *ticker = 0;
-                *state = UP;
+                ticker[led] = 0;
+                state[led] = UP;
             }
             break;
 
@@ -79,19 +75,23 @@ void dim_led(int led)
             break;
     }
 
-    *ticker = *ticker + 1;
+    ticker[led]++;
 }
 
 void setup()
 {
-    pinMode(LED_PIN_BLUE, OUTPUT);
-    pinMode(LED_PIN_RED, OUTPUT);
-    state_led1 = UP;
-    state_led2 = DOWN;
-    pwm_led1 = 0;
-    pwm_led2 = 255;
-    analogWrite(LED_PIN_BLUE, pwm_led1);
-    analogWrite(LED_PIN_RED, pwm_led2);
+    state[RED] = UP;
+    state[BLUE] = DOWN;
+    pwm[RED] = 0;
+    pwm[BLUE] = 255;
+    pin[RED] = LED_PIN_RED;
+    pin[BLUE] = LED_PIN_BLUE;
+
+    pinMode(pin[RED], OUTPUT);
+    pinMode(pin[BLUE], OUTPUT);
+
+    analogWrite(pin[RED], pwm[RED]);
+    analogWrite(pin[BLUE], pwm[BLUE]);
 }
 
 void loop()
