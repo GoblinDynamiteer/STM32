@@ -14,11 +14,18 @@ STEG 1. Haka en ISR på en knapp!
     använd denna för att stänga av och sätta på dimmer-funktionen,
     t.ex. så att när knappen trycks, så släcks LED:en och förblir avstängd,
     när den trycks en gång till så börjar den dimma upp och ner igen.
+
+    4. Dimma med ISR:en hakad på timern.
+    Implementera en LED-dimmer med hjälp av ISR:en.
+
+    5. Undersökning - kan man sätta fler timers:
+    Kan man? SVAR: JA
 */
 
 #include <MapleFreeRTOS821.h>
 
 #define LED_PIN_RED PA0
+#define LED_PIN_BLUE PA1 // For testing two timers
 #define INT_PIN PA7 // Button connected with pulldown
 #define DIM_DELAY_RED 5
 #define PWM_MAX 255
@@ -31,6 +38,7 @@ enum{NO, YES};
 
 unsigned long button_timer;
 bool button_pressed;
+bool swap;
 
 struct _led{
     int pin;
@@ -86,9 +94,17 @@ void dim_led(void)
     }
 }
 
+/* Timer4 blinks LED */
+void blink_led(void)
+{
+    swap = !swap;
+    digitalWrite(LED_PIN_BLUE, swap ? 0 : 255);
+}
+
 void setup()
 {
     pinMode(led.pin, OUTPUT);
+    pinMode(LED_PIN_BLUE, OUTPUT);
 
     /* Interrupt pin / button pin */
     pinMode(INT_PIN, INPUT_PULLUP);
@@ -100,8 +116,15 @@ void setup()
     Timer3.setCompare1(1);
     Timer3.attachCompare1Interrupt(dim_led);
 
+    Timer4.setChannel1Mode(TIMER_OUTPUTCOMPARE);
+    Timer4.setPeriod(500000); // 0,5 seconds
+    Timer4.setCompare1(1);
+    Timer4.attachCompare1Interrupt(blink_led);
+
     button_timer = millis();
     button_pressed = NO;
+
+    swap = YES;
 }
 
 /* Dim LED up/down with main loop instead of FreeRTOS */
