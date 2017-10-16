@@ -3,6 +3,7 @@
 #define COUNTER_CLICKER_PIN_AMOUNT 4
 #define COUNTER_CLICKER_TRESHOLD 6
 
+/* Pins for clicker counter "binary value" pins */
 int counter_pins[COUNTER_CLICKER_PIN_AMOUNT] = {
     PA0, PA1, PA2, PA3
 };
@@ -12,37 +13,40 @@ struct freq {
     int longDelay;
     int shortDelay;
 } LEDfreq[2] = {
-    {PA10, 100, 10},
-    {PA9,   74,  7}
+    {PA10, 10, 3},
+    {PA9, 10, 3}
 };
 
-SemaphoreHandle_t xSemaphore = NULL;
+SemaphoreHandle_t semaphore = NULL;
 
+/* Check clicker counter value */
 static void pollClickerCounter(void *pvParameters)
 {
     static int counter_value = 0;
 
     while(1)
     {
-        if(xSemaphoreTake(xSemaphore, (TickType_t)100) == pdTRUE)
+        if(xSemaphoreTake(semaphore, (TickType_t)100) == pdTRUE)
         {
-            counter_value = 0;
-            while(counter_value < COUNTER_CLICKER_TRESHOLD)
-            {
+            /*  Keep semaphore while counter value is under treshold,
+                LEDs will stop fading. */
+            do{
+                counter_value = 0;
                 for(int i = 0; i < COUNTER_CLICKER_PIN_AMOUNT; i++)
                 {
                     counter_value |= (!digitalRead(counter_pins[i]) ?
                         (1 << i) : 0);
                 }
-            }
+            }while(counter_value < COUNTER_CLICKER_TRESHOLD);
 
-            xSemaphoreGive(xSemaphore);
+            xSemaphoreGive(semaphore);
         }
 
         else;
     }
 }
 
+/* Fade LEDs while clicker counter value is >= 6 */
 static void vLEDFlashTask(void *pvParameters)
 {
     struct freq *Lfreq = (struct freq *)pvParameters;
@@ -50,9 +54,10 @@ static void vLEDFlashTask(void *pvParameters)
 
     for (;;)
     {
-        if(xSemaphoreTake(xSemaphore, (TickType_t)0) == pdTRUE)
+        /* Do one full fade cycle if semaphore is available */
+        if(xSemaphoreTake(semaphore, (TickType_t)0) == pdTRUE)
         {
-            xSemaphoreGive(xSemaphore);
+            xSemaphoreGive(semaphore); // Give semaphore and complete cycle
 
             int ix;
             vTaskDelay(Lfreq->longDelay);
@@ -81,7 +86,7 @@ void setup()
         pinMode(counter_pins[i], INPUT_PULLUP);
     }
 
-    xSemaphore = xSemaphoreCreateMutex();
+    semaphore = xSemaphoreCreateMutex();
 
     xTaskCreate(vLEDFlashTask,
         "LEDblink1",
