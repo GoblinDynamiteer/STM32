@@ -1,3 +1,20 @@
+/*  Connect sensor to STM32F103 dev board, check
+    sensor functionality. -- Determine a treshold value
+    for the sensor that enables fading of LEDS.
+
+    Use semaphores to block fade task
+
+    Chosen sensor: clicker counter device with two buttons and a digit display
+    button clicks decreases or increases digit value (0-9, rolls over to 0).
+
+    Clicker counter pins:
+        pins 1-2-3-4:
+        Binary number representing counter digit value,
+
+        1 value passes signal from pin 5
+        0 value blocks signal from pin 5
+    */
+
 #include <MapleFreeRTOS900.h>
 
 #define COUNTER_CLICKER_PIN_AMOUNT 4
